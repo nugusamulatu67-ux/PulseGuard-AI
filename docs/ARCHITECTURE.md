@@ -47,6 +47,15 @@ This document describes the **intended** high-level architecture. Implementation
 - Keep secrets in environment variables (see `.env.example`).
 - Shared types belong in `src/types`; shared helpers belong in `src/lib`.
 
+## Detailed planning docs
+
+This file is a short summary. Prefer these for implementation planning:
+
+- [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md) — full architecture
+- [DATABASE_DESIGN.md](./DATABASE_DESIGN.md) — schema proposal
+- [MVP_REQUIREMENTS.md](./MVP_REQUIREMENTS.md) — MVP scope
+- [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) — build phases
+
 ## Next steps
 
-See [ROADMAP.md](./ROADMAP.md) for milestone ordering.
+See [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) (detailed) or [ROADMAP.md](./ROADMAP.md) (short checklist).

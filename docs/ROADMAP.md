@@ -2,6 +2,8 @@
 
 High-level milestones for PulseGuard AI. Dates and ownership can be filled in by the team.
 
+For task-level phases and dependencies, use [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md).
+
 ## Milestone 0 — Foundation (current)
 
 - [x] Next.js + TypeScript + App Router

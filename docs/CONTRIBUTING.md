@@ -2,6 +2,8 @@
 
 Guidelines for developers working on PulseGuard AI.
 
+For the full beginner-friendly workflow (branching, PRs, conventions, security habits), see [TEAM_WORKFLOW.md](./TEAM_WORKFLOW.md).
+
 ## Branching
 
 - `main` — stable foundation and released work

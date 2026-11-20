@@ -77,12 +77,17 @@ See [docs/FOLDER_STRUCTURE.md](docs/FOLDER_STRUCTURE.md) for a detailed explanat
 
 ## Documentation
 
+Full index: [docs/README.md](docs/README.md)
+
 | Document | Purpose |
 | -------- | ------- |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | High-level system design and planned modules |
+| [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) | Purpose, problem, users, features |
+| [docs/MVP_REQUIREMENTS.md](docs/MVP_REQUIREMENTS.md) | MVP scope and requirements |
+| [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md) | Detailed system architecture |
+| [docs/DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md) | Proposed database schema |
+| [docs/DEVELOPMENT_ROADMAP.md](docs/DEVELOPMENT_ROADMAP.md) | Phased development plan |
+| [docs/TEAM_WORKFLOW.md](docs/TEAM_WORKFLOW.md) | Git/GitHub and coding workflow |
 | [docs/FOLDER_STRUCTURE.md](docs/FOLDER_STRUCTURE.md) | Folder and file conventions |
-| [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | Team workflow and coding guidelines |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | Planned feature milestones |
 
 ## Environment variables
 
