@@ -10,6 +10,8 @@ It agrees with:
 - [FOLDER_STRUCTURE.md](./FOLDER_STRUCTURE.md) — code layout  
 - Existing stack: **Next.js (App Router) + TypeScript + Tailwind**
 
+First-release scope comes from [MVP_REQUIREMENTS.md](./MVP_REQUIREMENTS.md) and [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md). This document describes that scope. Team workspaces, invitations, roles, email notifications, Slack notifications, stored incident records, and root-cause analysis are later work and are not part of the current architecture.
+
 ---
 
 ## Architecture in plain language
@@ -181,8 +183,9 @@ PulseGuard talks to two kinds of external HTTP targets:
 ### 1. Customer APIs (monitoring targets)
 
 - Our server sends a request (MVP: mainly `GET`) to the user’s registered URL
+- Both `http://` and `https://` URLs may be registered and probed. HTTPS remains supported. Plain HTTP is stored, checked, and reported as an insecure-connection finding
 - We measure status code, latency, and errors
-- We apply **timeouts** and **SSRF protections**
+- We apply **timeouts** and **SSRF protections** (only `http` and `https`, and no private or link-local addresses)
 
 ```text
 PulseGuard server ──HTTP GET──► https://api.example.com/health
@@ -248,7 +251,7 @@ Local development uses `npm run dev` + `.env.local`.
 
 | Risk | Architecture mitigation |
 | ---- | ----------------------- |
-| SSRF via monitor URLs | Validate URL; allow `https` only by default; block private/link-local IPs; timeout |
+| SSRF via monitor URLs | Validate URL; allow `http` and `https`; block other schemes and private/link-local IPs; timeout. Report `http` as a security finding instead of rejecting it at registration |
 | Leaked secrets | Env vars only; never expose server keys to client bundles |
 | Cross-user data access | Every query filtered by authenticated user ownership |
 | AI prompt injection / sensitive data leakage | Don’t send API tokens or raw secrets to the model |
@@ -273,8 +276,13 @@ Local development uses `npm run dev` + `.env.local`.
 - Message queues / event buses
 - Multi-region probe network
 - Real-time streaming dashboards
+- Team workspaces, invitations, and role management
+- Email, Slack, and other outbound notifications
+- A stored `failing` status, incident table, or root-cause analysis
 
-These can be reconsidered after MVP if real usage demands them.
+The dashboard derives “failing” from recent `check_results`. `endpoints.last_status` stays a cache of `up`, `down`, or `unknown`, and it is updated in the same operation as every new check result.
+
+These later items can be reconsidered after MVP if real usage demands them.
 
 ---
 

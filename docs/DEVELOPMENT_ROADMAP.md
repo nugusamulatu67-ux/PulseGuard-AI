@@ -5,6 +5,8 @@ It expands [ROADMAP.md](./ROADMAP.md) with tasks and dependencies suitable for a
 
 **Rule:** Finish (or stabilize) a phase before starting the next one. Parallel work is OK only when dependencies allow it.
 
+This file and [MVP_REQUIREMENTS.md](./MVP_REQUIREMENTS.md) are the authoritative scope for the first release. Shorter docs such as [ARCHITECTURE.md](./ARCHITECTURE.md) and [ROADMAP.md](./ROADMAP.md) must follow them.
+
 ---
 
 ## Phase map
@@ -80,7 +82,7 @@ Phase 8 Post-MVP (only after MVP ships)
 | P2-3 | Link auth user ↔ `users` table | P1-2, P2-2 |
 | P2-4 | Projects CRUD (create/list/view/delete) with ownership checks | P2-3, P1-3 |
 | P2-5 | Endpoints CRUD inside a project | P2-4 |
-| P2-6 | URL validation helpers (`https`, basic format) | P2-5 |
+| P2-6 | URL validation helpers (`http` or `https`, basic format, block private addresses). Allow HTTP registrations; do not require HTTPS | P2-5 |
 
 **Exit criteria:** User can create a project, add an endpoint URL, and see it listed after refresh.
 
@@ -94,10 +96,10 @@ Phase 8 Post-MVP (only after MVP ships)
 | ------- | ---- | ---------- |
 | P3-1 | Outbound HTTP check service (timeouts, status, latency) | P2-5 |
 | P3-2 | SSRF protections (block private IPs, etc.) | P3-1 |
-| P3-3 | Save `check_results` + update endpoint last status | P3-1, P2-2 |
+| P3-3 | Save `check_results` and, in the same operation, update cached `last_status` (`up`, `down`, or `unknown`) and `last_checked_at`. Do not store `failing` | P3-1, P2-2 |
 | P3-4 | “Check now” button + API route/server action | P3-3, P1-3 |
 | P3-5 | Endpoint detail page: recent history table | P3-3 |
-| P3-6 | Project dashboard status summary | P3-3 |
+| P3-6 | Project dashboard status summary from cached `last_status`, plus a “failing” highlight derived from consecutive recent `check_results` | P3-3 |
 
 **Exit criteria:** Manual check against a public URL shows success/failure and latency.
 
@@ -124,12 +126,12 @@ Phase 8 Post-MVP (only after MVP ships)
 
 | Task ID | Task | Depends on |
 | ------- | ---- | ---------- |
-| P5-1 | Security check service (HTTPS + headers) | P3-1 |
+| P5-1 | Security check service: report insecure HTTP, check security headers, and treat HTTPS as the passing transport | P3-1 |
 | P5-2 | Store `security_findings` | P5-1, P2-2 |
 | P5-3 | “Scan security” action in UI | P5-2 |
 | P5-4 | Findings list on endpoint page | P5-2 |
 
-**Exit criteria:** An HTTP-only or header-weak endpoint produces visible findings.
+**Exit criteria:** A registered `http://` endpoint or a header-weak endpoint produces visible findings. HTTPS endpoints pass the transport check. HTTP registration is allowed.
 
 ---
 
@@ -169,14 +171,16 @@ Phase 8 Post-MVP (only after MVP ships)
 
 ## Phase 8 — Post-MVP (backlog)
 
-Only after MVP ships:
+Only after MVP ships. These items are not part of the current architecture or the first release:
 
-- Team invites / shared projects
-- Email or Slack alerts
+- Team workspaces, invitations, and role management
+- Email and Slack notifications (PagerDuty as well, if added)
 - Encrypted credentials for private endpoints
 - Richer security checks
 - Charts / longer retention analytics
 - Billing
+- Stored incident records and root-cause analysis
+- Full observability stack and audit logs
 
 ---
 

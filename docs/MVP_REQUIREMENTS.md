@@ -19,6 +19,8 @@ Ship a working app where a signed-in user can:
 
 Keep the stack simple: one Next.js app, one PostgreSQL database, managed auth, and one AI provider path.
 
+The first release is **individual developer accounts only**. Team workspaces, invitations, and role management are post-MVP. This document and [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) are the authoritative scope for that release.
+
 ---
 
 ## Detailed MVP features
@@ -42,18 +44,21 @@ Keep the stack simple: one Next.js app, one PostgreSQL database, managed auth, a
 | Open project | View endpoints and recent check status |
 | Delete project | Remove a project and its related data (or soft-delete) |
 
-**MVP simplification:** One user owns their projects. Team invites and roles come later.
+**MVP rule:** One individual user owns their projects. Team workspaces, invitations, and roles are post-MVP.
 
 ### 3. API endpoint management
 
 | Feature | Description |
 | ------- | ----------- |
 | Add endpoint | URL, HTTP method (GET for MVP), optional display name |
+| Allowed URL schemes | Both `http://` and `https://` may be registered. Other schemes are rejected |
 | Edit endpoint | Update name/URL/settings |
 | Delete endpoint | Remove from monitoring |
 | List endpoints | Show status summary per endpoint |
 
 **MVP simplification:** Focus on `GET` health checks first. Auth headers for private APIs can be a stretch goal if time allows (must be stored encrypted if implemented).
+
+Plain HTTP is a valid registration. The security scan reports it as an insecure connection. HTTPS endpoints continue to be monitored and pass that check.
 
 ### 4. Health monitoring
 
@@ -62,6 +67,7 @@ Keep the stack simple: one Next.js app, one PostgreSQL database, managed auth, a
 | Manual check | “Check now” button |
 | Scheduled check | Periodic checks (for example every 5–15 minutes via cron) |
 | Record result | Status code, latency (ms), success/fail, timestamp, error message if any |
+| Cached status | Whenever a check result is saved, update `endpoints.last_status` (`up`, `down`, or `unknown`) and `last_checked_at` in the same operation |
 | History | Last N results per endpoint |
 
 **Success rule (MVP):** HTTP status `2xx` or `3xx` = healthy; anything else or timeout = unhealthy.
@@ -72,7 +78,7 @@ Lightweight checks only — not a full penetration testing tool.
 
 | Check | What we look for |
 | ----- | ---------------- |
-| HTTPS | URL uses `https://` |
+| Insecure HTTP | The endpoint URL uses `http://`. Registration still succeeds. The finding reports the connection as insecure. A `https://` URL passes this check |
 | Security headers | Presence of common headers (e.g. `Strict-Transport-Security`, `Content-Type-Options`, `X-Frame-Options` / `frame-ancestors`) |
 | Redirect / TLS basics | Obvious misconfiguration signals from the response |
 
@@ -82,9 +88,9 @@ Results are stored as findings with severity (`info`, `low`, `medium`, `high`).
 
 | Feature | Description |
 | ------- | ----------- |
-| Latest status | Up / Down / Unknown on dashboard |
+| Latest status | Up / Down / Unknown from the cached `last_status` field |
 | Recent failures | List of failed checks |
-| Simple incident flag | If consecutive checks fail, mark endpoint as “failing” |
+| Failing highlight | If recent checks fail consecutively, the dashboard shows “failing”. This is derived from `check_results` at read time. It is not written to `endpoints.last_status` and there is no incident record |
 
 ### 7. AI recommendations
 
@@ -151,14 +157,14 @@ Do **not** build these in MVP unless the whole team explicitly re-prioritizes:
 
 | Excluded feature | Why wait |
 | ---------------- | -------- |
-| Team invites / roles / SSO | Adds auth complexity |
+| Team workspaces, invitations, roles, and SSO | Post-MVP. MVP accounts are individual developers only |
 | Full OWASP / penetration testing | Too broad for beginners |
 | Custom scripting / plugin system | Hard to secure and maintain |
 | Mobile apps | Web-first is enough |
 | Real-time WebSocket live graphs | Polling or page refresh is fine |
 | Multi-region distributed probes | Overkill for MVP |
 | Billing / subscriptions | Product first |
-| Slack / PagerDuty integrations | Nice later; email optional stretch |
+| Email, Slack, and PagerDuty notifications | Post-MVP. The first release has no outbound notifications. Status, failures, findings, and recommendations appear on the dashboard |
 | Complex AI agents / autonomous remediations | Keep one recommendation call |
 | Public API for third-party tools | Internal app first |
 | GraphQL gateway | REST/route handlers are enough |
@@ -169,7 +175,7 @@ Do **not** build these in MVP unless the whole team explicitly re-prioritizes:
 
 | Risk | Impact | Mitigation |
 | ---- | ------ | ---------- |
-| Checking untrusted URLs (SSRF) | Attacker could make our server call internal network addresses | Allowlist schemes (`https` only by default), block private IP ranges, set timeouts |
+| Checking untrusted URLs (SSRF) | Attacker could make our server call internal network addresses | Allow `http` and `https` only, block private IP ranges, set timeouts. Do not reject `http` at registration; report it as a security finding |
 | Storing API tokens for private endpoints | Token theft if DB leaks | Defer tokens if possible; otherwise encrypt at rest and never show full token again |
 | AI cost / rate limits | Unexpected bills or failures | Manual generate button; limit frequency; use one model via gateway |
 | Cron reliability | Missed checks | Use platform cron (e.g. Vercel Cron); store last-run time; allow manual check |
@@ -180,7 +186,8 @@ Do **not** build these in MVP unless the whole team explicitly re-prioritizes:
 
 ## Security considerations (MVP checklist)
 
-- [ ] HTTPS only in production
+- [ ] The PulseGuard site itself is served over HTTPS in production
+- [ ] Registered `http://` monitor URLs are kept and reported as insecure findings
 - [ ] No secrets in the repository
 - [ ] Auth on all private routes and API handlers
 - [ ] Ownership checks on every project/endpoint query

@@ -2,7 +2,9 @@
 
 PulseGuard AI is planned as an AI-powered API security and reliability platform.
 
-This document describes the **intended** high-level architecture. Implementation work has not started beyond the Next.js foundation.
+This document describes the **intended** high-level architecture for the first release. Implementation work has not started beyond the Next.js foundation.
+
+[MVP_REQUIREMENTS.md](./MVP_REQUIREMENTS.md) and [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) decide what is in that release. This summary should not add features those documents schedule for later.
 
 ## Product goals
 
@@ -21,7 +23,7 @@ This document describes the **intended** high-level architecture. Implementation
 ├─────────────────────────────────────────────┤
 │  Domain services (monitor, scan, advise)    │
 ├─────────────────────────────────────────────┤
-│  Integrations (AI, storage, auth, alerts)   │
+│  Integrations (AI, storage, auth)           │
 └─────────────────────────────────────────────┘
 ```
 
@@ -30,16 +32,23 @@ This document describes the **intended** high-level architecture. Implementation
 | Presentation | Dashboards, settings, and developer-facing views |
 | API / server | Request handling, validation, and orchestration |
 | Domain services | Business logic for monitoring, scanning, and recommendations |
-| Integrations | External providers (AI models, databases, auth, notifications) |
+| Integrations | External providers for the first release (AI models, database, auth) |
 
 ## Planned modules (not yet implemented)
 
-- **API monitoring** — endpoint checks, uptime, latency, and status tracking
-- **Security scanning** — vulnerability and misconfiguration detection
-- **Failure analysis** — incident detection and root-cause signals
+- **API monitoring** — endpoint checks, uptime, latency, and status tracking for one developer’s endpoints
+- **Security scanning** — misconfiguration detection, including insecure HTTP. Both `http://` and `https://` can be registered. HTTPS remains supported
+- **Failure visibility** — the dashboard derives a “failing” highlight from recent check results. `last_status` stores only `up`, `down`, or `unknown`
 - **AI recommendations** — prioritized remediation guidance
-- **Auth & workspaces** — multi-user access and project isolation
-- **Alerting** — notifications when issues are detected
+- **Auth and projects** — individual accounts and per-user project ownership
+
+### Later, not part of this architecture
+
+Scheduled in [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) Phase 8, after the first release:
+
+- Team workspaces, invitations, and role management
+- Email and Slack notifications
+- Stored incident records and root-cause analysis
 
 ## Runtime notes
 

@@ -23,7 +23,7 @@ Common pain points:
 | Problem | Why it hurts |
 | ------- | ------------ |
 | APIs go down or slow down without warning | Users see errors; developers scramble |
-| Security issues (missing HTTPS, weak headers, risky configs) stay hidden | Higher chance of attacks or data leaks |
+| Security issues (plain HTTP, weak headers, risky configs) stay hidden | Higher chance of attacks or data leaks |
 | Logs and status codes are hard to interpret quickly | Junior developers waste time guessing |
 | Advice is scattered across docs and chat tools | Fixes are inconsistent and slow |
 
@@ -35,13 +35,15 @@ PulseGuard AI aims to put **monitoring**, **basic security checks**, **failure h
 
 ### Primary users (MVP)
 
-- **Individual developers** building or maintaining APIs
+- **Individual developers** building or maintaining their own APIs
+
+Each account owns only its own projects. The first release has no shared team login.
+
+### Later users (post-MVP)
+
 - **Small product teams** (2–6 people) who need a shared view of API health
-
-### Secondary users (later, not MVP)
-
 - Security-focused engineers who want deeper scanning
-- Larger companies that need advanced roles, SSO, and audit compliance
+- Larger companies that need team workspaces, invitations, roles, SSO, and audit compliance
 
 ### User goals
 
@@ -49,22 +51,23 @@ PulseGuard AI aims to put **monitoring**, **basic security checks**, **failure h
 | -------------- | -------------------- |
 | Know if an API is up | Running scheduled health checks |
 | See how fast it responds | Recording latency and status codes |
-| Catch obvious security gaps | Running basic security checks |
+| Catch obvious security gaps, including plain HTTP | Running basic security checks and reporting insecure HTTP |
 | Understand what to do next | Generating AI recommendations |
-| Share status with teammates | Organizing APIs under projects |
+| Keep related endpoints together | Organizing APIs under a personal project |
 
 ---
 
 ## Main features (product vision)
 
-These are the product pillars. The **first shippable version** is a smaller subset — see [MVP_REQUIREMENTS.md](./MVP_REQUIREMENTS.md).
+These are the first-release pillars. Scope details live in [MVP_REQUIREMENTS.md](./MVP_REQUIREMENTS.md).
 
 1. **API monitoring** — register endpoints and check availability, status codes, and response time.
-2. **Security checks** — detect common misconfigurations (for example missing HTTPS or important security headers).
-3. **Failure tracking** — store check history and highlight when something starts failing.
+2. **Security checks** — accept both HTTP and HTTPS endpoints. Report plain HTTP as an insecure connection, and detect other common misconfigurations (for example missing security headers). HTTPS remains fully supported.
+3. **Failure tracking** — store every check result. The dashboard highlights an endpoint as failing when recent results fail repeatedly. That label is calculated from history. It is not saved on the endpoint.
 4. **AI recommendations** — turn check/scan results into prioritized, readable advice.
-5. **Projects & accounts** — sign in, create a project, and manage endpoints in one workspace.
-6. **Simple alerts** (post-MVP stretch) — notify someone when an API fails repeatedly.
+5. **Projects & accounts** — individual developer accounts. Sign in, create a project, and manage endpoints you own.
+
+**Not in the first release:** team workspaces, invitations, role management, and email or Slack notifications. Those are post-MVP. The first release shows status, failures, findings, and recommendations on the dashboard only.
 
 ---
 

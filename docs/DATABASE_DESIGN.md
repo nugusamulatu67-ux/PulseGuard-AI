@@ -12,7 +12,7 @@ This document proposes the **MVP database schema** for PulseGuard AI.
 
 ## Design principles (beginner-friendly)
 
-1. **One fact in one place** — avoid duplicating the same data in many tables.
+1. **One fact in one place** — avoid duplicating the same data in many tables. **Exception:** `endpoints.last_status` and `endpoints.last_checked_at` are a deliberate cache of the latest health check so dashboards can render without scanning full history. Whenever a new `check_results` row is recorded, update both cached fields in the same operation. After that write, `last_status` must match the new row (`up` or `down`) and `last_checked_at` must match `checked_at`.
 2. **Clear ownership** — almost everything ties back to a `user` through a `project`.
 3. **History is append-only** — check results are inserted, not overwritten (so we can see trends).
 4. **Use IDs** — every row has a unique `id` (UUID recommended).
@@ -76,7 +76,7 @@ Stores application users.
 
 ### 2. `projects`
 
-A workspace that groups endpoints.
+A personal project that groups endpoints for one individual developer. Team workspaces are post-MVP.
 
 | Field | Type (conceptual) | Notes |
 | ----- | ----------------- | ----- |
@@ -100,12 +100,12 @@ An API URL we monitor.
 | `id` | UUID | Primary key |
 | `project_id` | UUID | Foreign key → `projects.id` |
 | `name` | text | Friendly label |
-| `url` | text | Full URL to check |
+| `url` | text | Full URL to check. Both `http://` and `https://` are allowed. Plain HTTP is reported later as a security finding. HTTPS remains supported |
 | `method` | text | MVP default: `GET` |
 | `is_active` | boolean | If false, skip scheduled checks |
 | `check_interval_minutes` | integer | e.g. 5 or 15 |
-| `last_checked_at` | timestamp | Nullable until first check |
-| `last_status` | text | e.g. `up`, `down`, `unknown` |
+| `last_checked_at` | timestamp | Nullable until first check. Set it to the new result’s `checked_at` in the same operation that inserts `check_results` |
+| `last_status` | text | Cached latest health only: `up`, `down`, or `unknown`. Do not store `failing`. Update this field in the same operation as every new `check_results` row. The dashboard derives “failing” from recent results |
 | `created_at` | timestamp | |
 | `updated_at` | timestamp | |
 
@@ -144,7 +144,7 @@ Results from basic security checks.
 | ----- | ----------------- | ----- |
 | `id` | UUID | Primary key |
 | `endpoint_id` | UUID | Foreign key → `endpoints.id` |
-| `check_name` | text | e.g. `https_required`, `missing_hsts` |
+| `check_name` | text | e.g. `https_required`, `missing_hsts`. `https_required` fails for an `http://` URL and passes for `https://` |
 | `severity` | text | `info`, `low`, `medium`, `high` |
 | `title` | text | Short label |
 | `description` | text | What was found |
@@ -196,7 +196,7 @@ When loading an endpoint, always join/check that `projects.user_id === current_u
 1. Alice signs up → row in `users`
 2. Alice creates “Payments API” → row in `projects`
 3. Alice adds `https://api.example.com/health` → row in `endpoints`
-4. Cron runs a check → row in `check_results`; `endpoints.last_status` updated
+4. Cron runs a check → insert a `check_results` row and, in the same operation, set `endpoints.last_status` and `endpoints.last_checked_at` from that row
 5. Security scan runs → rows in `security_findings`
 6. Alice clicks “Generate recommendations” → row(s) in `recommendations`
 
@@ -206,11 +206,11 @@ When loading an endpoint, always join/check that `projects.user_id === current_u
 
 | Idea | Why not now |
 | ---- | ----------- |
-| Organization / team tables | Single-owner projects first |
-| Role / permission tables | No multi-member workspaces yet |
-| Alert subscription tables | Alerts are post-MVP |
+| Organization / team workspace tables | Post-MVP. MVP is individual developer accounts only |
+| Invitation and role / permission tables | Post-MVP team invitations and role management |
+| Email, Slack, or other notification tables | Post-MVP. MVP reports status on the dashboard only |
 | Full raw response body storage | Large, sensitive, expensive — store only small evidence |
-| Separate incident table | Derive “failing” from consecutive `check_results` first |
+| Separate incident table or stored `failing` status | The dashboard derives “failing” from consecutive `check_results`. `last_status` stays `up`, `down`, or `unknown` |
 
 ---
 
